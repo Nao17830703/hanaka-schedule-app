@@ -1,0 +1,1916 @@
+/* ==========================================================================
+   華佳ちゃん スケジュール＆お出かけマネージャー スタイルシート (Apple-inspired Calm UI)
+   ========================================================================== */
+
+:root {
+  --primary: #5c6bc0;
+  --primary-hover: #3f51b5;
+  --primary-light: #e8eaf6;
+  --primary-dark: #283593;
+  
+  --secondary: #26a69a;
+  --secondary-light: #e0f2f1;
+  
+  --accent-orange: #ff7043;
+  --accent-orange-light: #fbe9e7;
+  
+  --bg-page: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-subtle: #f1f5f9;
+  
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  
+  --border-color: #e2e8f0;
+  --border-focus: #818cf8;
+  
+  --status-active: #4f46e5;
+  --status-active-bg: #eef2ff;
+  --status-warning: #f59e0b;
+  --status-warning-bg: #fef3c7;
+  --status-danger: #ef4444;
+  --status-danger-bg: #fee2e2;
+  --status-success: #10b981;
+  --status-success-bg: #d1fae5;
+  
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.03);
+  
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  --header-height: 68px;
+}
+
+/* リセット＆基本設定 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* アプリケーション全体レイアウト */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* ヘッダー */
+.app-header {
+  height: var(--header-height);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-left .app-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 4px;
+  border-radius: var(--radius-md);
+}
+
+.app-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+.app-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* 月移動ナビゲーター */
+.month-navigator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg-subtle);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
+.current-month-display {
+  font-size: 1.15rem;
+  font-weight: 700;
+  min-width: 130px;
+  text-align: center;
+  user-select: none;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ナビゲーションタブ（iPad最適化・大きめタップ領域） */
+.nav-tabs {
+  display: flex;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 1.5rem;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  min-height: 52px; /* タップしやすい高さ */
+}
+
+.nav-tab:hover {
+  color: var(--text-main);
+}
+
+.nav-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.nav-tab svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* バッジ類 */
+.badge-new, .badge-count, .badge-status {
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+.badge-new {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.badge-count {
+  background-color: var(--accent-orange-light);
+  color: var(--accent-orange);
+}
+
+.badge-status {
+  background-color: var(--secondary-light);
+  color: var(--secondary);
+}
+
+/* メインコンテンツ */
+.main-content {
+  flex: 1;
+  padding: 1.5rem;
+  background-color: var(--bg-page);
+}
+
+.tab-pane {
+  display: none;
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ボタン基本スタイル */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn-primary, .btn-primary-sm, .btn-secondary, .btn-outline, .btn-outline-sm, .btn-pill-subtle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 4px rgba(92, 107, 192, 0.3);
+}
+
+.btn-accent-calendar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+  transition: all 0.15s ease;
+}
+
+.btn-accent-calendar:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-accent-calendar:active {
+  transform: translateY(1px);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  box-shadow: 0 4px 8px rgba(92, 107, 192, 0.4);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary-sm {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-secondary {
+  background-color: var(--bg-subtle);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
+}
+
+.btn-secondary:hover {
+  background-color: #e2e8f0;
+}
+
+.btn-outline {
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+}
+
+.btn-outline:hover {
+  background: var(--bg-subtle);
+  border-color: #cbd5e1;
+}
+
+.btn-outline-sm {
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+
+.btn-icon:hover {
+  background-color: rgba(0,0,0,0.05);
+  color: var(--text-main);
+}
+
+.btn-pill-subtle {
+  border: none;
+  background: white;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-large {
+  padding: 0.85rem 1.75rem;
+  font-size: 1.05rem;
+}
+
+.btn-text-danger {
+  background: transparent;
+  border: none;
+  color: var(--status-danger);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 8px;
+}
+
+.btn-text-danger:hover {
+  text-decoration: underline;
+}
+
+/* カード全般 */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.card-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   TAB 1: カレンダー
+   ========================================================================== */
+.pane-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.rule-summary-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1rem;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.rule-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rule-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.day-service-dot {
+  background-color: var(--primary);
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-pill {
+  background: white;
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+}
+
+.stat-pill strong {
+  color: var(--primary);
+  font-size: 1.1rem;
+}
+
+.calendar-wrapper {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.calendar-week-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--bg-subtle);
+  border-bottom: 2px solid var(--border-color);
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.week-cell {
+  padding: 0.6rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.week-cell .day-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.week-cell.sun { color: #dc2626; }
+.week-cell.sat { color: #2563eb; }
+
+/* 曜日ヘッダー内の基本下校時間バッジ */
+.default-dismissal-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #475569;
+  line-height: 1.2;
+  border: 1px solid #e2e8f0;
+}
+
+/* 水曜日の目立つアクセント（14:00下校） */
+.week-cell.highlight-wed {
+  background: #fffbeb;
+}
+
+.week-cell.highlight-wed .day-name {
+  color: #d97706;
+}
+
+.default-dismissal-badge.wed-badge {
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+  font-weight: 800;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(130px, 1fr);
+  border-collapse: collapse;
+}
+
+.cal-day-cell {
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  position: relative;
+  transition: background-color 0.1s;
+}
+
+.cal-day-cell:nth-child(7n) {
+  border-right: none;
+}
+
+.cal-day-cell.other-month {
+  background: #fafafa;
+  opacity: 0.45;
+}
+
+.cal-day-cell.holiday {
+  background: #fff8f8;
+}
+
+.cal-day-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.35rem;
+}
+
+.cal-date-num {
+  font-size: 0.95rem;
+  font-weight: 700;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.cal-day-cell.today .cal-date-num {
+  background-color: var(--primary);
+  color: white;
+}
+
+.cal-day-cell.sun .cal-date-num,
+.cal-day-cell.holiday .cal-date-num {
+  color: #dc2626;
+}
+
+.cal-day-cell.sat .cal-date-num {
+  color: #2563eb;
+}
+
+.holiday-name-label {
+  font-size: 0.65rem;
+  color: #dc2626;
+  font-weight: 600;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.cal-events-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+/* カレンダー内のイベントバッジ */
+.event-badge {
+  font-size: 0.72rem;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.event-badge.school-event {
+  background: #f1f5f9;
+  color: #334155;
+  border-left: 3px solid #64748b;
+}
+
+.event-badge.early-dismissal {
+  background: var(--status-warning-bg);
+  color: #92400e;
+  border-left: 3px solid var(--status-warning);
+}
+
+/* ==========================================================================
+   当日の下校時間バナー (スクールバスお迎え時間明記)
+   ========================================================================== */
+.cal-dismissal-banner {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  line-height: 1.25;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+/* 平常時下校 (15:00) */
+.cal-dismissal-banner.dismissal-normal {
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+}
+
+/* 水曜平常時下校 (14:00) */
+.cal-dismissal-banner.dismissal-wed-normal {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  font-weight: 800;
+}
+
+/* ⚠️ 早帰り・変則下校 (最重要警告スタイル) */
+.cal-dismissal-banner.dismissal-alert {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1.5px solid #ef4444;
+  font-weight: 800;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25);
+  animation: subtlePulse 2.5s infinite ease-in-out;
+}
+
+@keyframes subtlePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  }
+}
+
+/* 終日休業・代休 */
+.cal-dismissal-banner.dismissal-off {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+}
+
+/* 早帰りの日の日付マス全体アクセント */
+.cal-day-cell.has-early-dismissal {
+  background: #fffafa;
+  border-left: 3px solid #ef4444;
+}
+
+/* 放デイ トグルバッジ（タップで時間編集・ON/OFF） */
+.day-service-toggle-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  user-select: none;
+  transition: all 0.15s ease;
+  min-height: 32px;
+}
+
+.day-service-toggle-badge:hover {
+  filter: brightness(0.96);
+}
+
+.day-service-toggle-badge.active {
+  background-color: var(--primary-light);
+  color: var(--primary-dark);
+  border-color: #c5cae9;
+}
+
+.day-service-toggle-badge.inactive {
+  background-color: #f1f5f9;
+  color: var(--text-muted);
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.day-service-toggle-badge.holiday-warning {
+  background-color: var(--status-warning-bg);
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.day-service-toggle-badge:active {
+  transform: scale(0.97);
+}
+
+.ds-badge-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ds-return-time-tag {
+  background: rgba(255, 255, 255, 0.85);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: var(--primary-dark);
+  font-weight: 800;
+  border: 1px solid rgba(92, 107, 192, 0.3);
+}
+
+.ds-edit-hint {
+  font-size: 0.65rem;
+  opacity: 0.7;
+  margin-left: 2px;
+}
+
+/* カレンダーセル内の「+ 移動支援」平日用クイックボタン */
+.cal-add-mobility-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 3px;
+  transition: all 0.15s ease;
+  opacity: 0.85;
+}
+
+.cal-add-mobility-btn:hover {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #86efac;
+  opacity: 1;
+}
+
+.cal-add-mobility-btn:active {
+  transform: scale(0.96);
+}
+
+/* カレンダーセル内の「+ 土曜放デイ追加」クイックボタン */
+.cal-add-sat-ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: #fdf2f8;
+  color: #db2777;
+  border: 1px dashed #f472b6;
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 3px;
+  transition: all 0.15s ease;
+  opacity: 0.9;
+}
+
+.cal-add-sat-ds-btn:hover {
+  background: #fce7f3;
+  color: #be185d;
+  border-color: #ec4899;
+  opacity: 1;
+}
+
+.cal-add-sat-ds-btn:active {
+  transform: scale(0.96);
+}
+
+/* 移動支援バッジ */
+.mobility-badge {
+  background-color: #dcfce7;
+  color: #166534;
+  font-size: 0.72rem;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  border-left: 3px solid #22c55e;
+}
+
+/* ==========================================================================
+   TAB 2: 学校お便り解析 & Google Drive 連携
+   ========================================================================== */
+.gdrive-flow-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1rem;
+}
+
+.gdrive-flow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.gdrive-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+}
+
+.gdrive-steps {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.gdrive-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  flex: 1;
+  min-width: 170px;
+}
+
+.gdrive-step.active {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.step-num {
+  width: 20px;
+  height: 20px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.gdrive-step div strong {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-main);
+}
+
+.gdrive-step div p {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.step-arrow {
+  color: var(--text-light);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 1.5rem;
+}
+
+.source-tag {
+  background: #fef08a;
+  color: #854d0e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.dropzone:hover, .dropzone.dragover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.dropzone-icon {
+  width: 44px;
+  height: 44px;
+  color: var(--primary);
+}
+
+.dropzone-text {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.dropzone-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.file-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f1f5f9;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.scan-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--primary-dark);
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(92, 107, 192, 0.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.table-container {
+  overflow-x: auto;
+  max-height: 460px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.data-table th, .data-table td {
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table td.clickable-cell {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.data-table td.clickable-cell:hover {
+  background-color: #f1f5f9;
+}
+
+.edit-hint-inline {
+  display: inline-block;
+  opacity: 0.6;
+  margin-left: 4px;
+  font-size: 0.8rem;
+  color: var(--primary);
+}
+
+.data-table td.clickable-cell:hover .edit-hint-inline {
+  opacity: 1;
+}
+
+.data-table th {
+  background: var(--bg-subtle);
+  font-weight: 700;
+  color: var(--text-muted);
+  position: sticky;
+  top: 0;
+}
+
+.card-footer {
+  margin-top: 1.25rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ==========================================================================
+   TAB 3: 移動支援＆お出かけ管理
+   ========================================================================== */
+.mobility-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-chip {
+  background: var(--bg-subtle);
+  border: none;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.filter-chip.active {
+  background: var(--primary);
+  color: white;
+}
+
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.slot-item {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  transition: all 0.15s ease;
+}
+
+.slot-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-sm);
+}
+
+.slot-item.assigned {
+  border-left: 4px solid var(--secondary);
+  background: #f0fdf4;
+}
+
+.slot-date {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.slot-time {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.slot-assigned-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.slot-assigned-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid #bbf7d0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #166534;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.slot-item.confirmed {
+  border-left: 5px solid #10b981;
+  background: #f0fdf4;
+}
+
+.slot-item.requested {
+  border-left: 5px solid #f59e0b;
+  background: #fffbeb;
+}
+
+.slot-item.cancelled {
+  border-left: 5px solid #94a3b8;
+  background: #f8fafc;
+  opacity: 0.85;
+}
+
+.slot-item.cancelled .slot-assigned-header {
+  border-color: #cbd5e1;
+  color: #64748b;
+  text-decoration: line-through;
+}
+
+/* ステータスバッジ */
+.status-pill {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  letter-spacing: 0.02em;
+}
+
+.status-pill.confirmed {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.status-pill.requested {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.status-pill.cancelled {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+/* アクションボタンバー */
+.slot-action-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-status-confirm {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-status-confirm:hover {
+  background-color: #059669;
+}
+
+.btn-status-cancel {
+  background-color: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.btn-status-cancel:hover {
+  background-color: #ffe4e6;
+  border-color: #fda4af;
+}
+
+.btn-status-revert {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-status-revert:hover {
+  background-color: #e2e8f0;
+}
+
+/* カレンダー内の移動支援バッジのステータス修飾 */
+.mobility-badge {
+  background-color: #dcfce7;
+  color: #166534;
+  font-size: 0.72rem;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  border-left: 3px solid #22c55e;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.mobility-badge:hover {
+  transform: translateY(-1px);
+}
+
+.mobility-badge.confirmed {
+  background-color: #d1fae5;
+  color: #065f46;
+  border-left: 3px solid #10b981;
+}
+
+.mobility-badge.requested {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-left: 3px solid #f59e0b;
+}
+
+.mobility-badge.cancelled {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  border-left: 3px solid #cbd5e1;
+  text-decoration: line-through;
+}
+
+/* モーダル内ステータスラジオボタングループ */
+.radio-status-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.status-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.status-radio-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.status-radio-badge.badge-requested {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-radio-badge.badge-confirmed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-radio-badge.badge-cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* トースト通知 */
+.toast-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast-message {
+  background: rgba(15, 23, 42, 0.92);
+  color: white;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideUp 0.25s ease-out;
+  pointer-events: auto;
+}
+
+.toast-message.toast-success {
+  border-left: 4px solid #10b981;
+}
+
+.toast-message.toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.toast-message.toast-info {
+  border-left: 4px solid #38bdf8;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* お出かけ先データベース */
+.spot-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input-wrapper svg {
+  position: absolute;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.search-input-wrapper input {
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 34px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
+.spot-type-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.type-tab {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.type-tab.active {
+  background: var(--text-main);
+  color: white;
+  border-color: var(--text-main);
+}
+
+.spots-collection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.spot-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.spot-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+
+.spot-meta {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.spot-tag {
+  background: var(--bg-subtle);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.spot-status-badge {
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+}
+
+.spot-status-badge.unfulfilled {
+  background: var(--accent-orange-light);
+  color: var(--accent-orange);
+}
+
+.spot-status-badge.visited {
+  background: var(--status-success-bg);
+  color: var(--status-success);
+}
+
+/* ==========================================================================
+   TAB 4: FAX提出用PDF出力
+   ========================================================================== */
+.fax-export-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.5rem;
+}
+
+.fax-settings-card {
+  height: fit-content;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.4rem;
+}
+
+.text-input {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  transition: border-color 0.15s;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+}
+
+.time-input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 1.25rem 0;
+}
+
+.export-summary-box {
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.export-summary-box h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.action-buttons-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* FAXプレビューペーパー */
+.paper-stage {
+  background: #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  max-height: 720px;
+}
+
+.paper-sheet {
+  background: white;
+  box-shadow: var(--shadow-lg);
+  border-radius: 4px;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#faxPreviewCanvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ==========================================================================
+   モーダル
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1.5rem;
+}
+
+.modal-backdrop.open {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-dialog {
+  background: white;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 520px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.close-modal-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.helper-text {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.radio-group {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.9rem;
+}
+
+/* クイックタイムチップ（帰着時間のワンタップ選択） */
+.quick-time-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.time-chip {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.time-chip:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+
+.time-chip.selected {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* 土曜日クイック振替チップ */
+.sat-chip {
+  background: var(--bg-subtle, #f8fafc);
+  border: 1.5px solid var(--border-color, #cbd5e1);
+  padding: 6px 12px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main, #334155);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sat-chip:hover {
+  background: #fdf2f8;
+  border-color: #f472b6;
+  color: #db2777;
+}
+
+.sat-chip.selected {
+  background: var(--primary, #6366f1);
+  border-color: var(--primary, #6366f1);
+  color: white;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.35);
+}
+
+.sat-chip.booked:not(.selected) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #64748b;
+  opacity: 0.85;
+}
+
+/* 平日放課後枠のスロット強調 */
+.slot-type-badge {
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  display: inline-block;
+  margin-left: 6px;
+}
+
+.slot-type-badge.weekday-short {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.slot-type-badge.weekend {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* レスポンシブ (iPad / スマートフォン) */
+@media (max-width: 1024px) {
+  .split-layout, .mobility-grid, .fax-export-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .cal-day-cell {
+    min-height: 110px;
+    padding: 0.35rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    flex-direction: column;
+    height: auto;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+  .month-navigator {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .cal-day-cell {
+    min-height: 80px;
+    padding: 2px;
+  }
+  .event-badge {
+    font-size: 0.65rem;
+    padding: 1px 3px;
+  }
+}
+
+/* ==========================================================================
+   印刷用スタイル (@media print) - A4横 直接印刷 (AirPrint/ブラウザ印刷) 最適化
+   ========================================================================== */
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .app-header,
+  .main-nav-tabs,
+  .fax-settings-card,
+  .modal-backdrop,
+  .toast-container,
+  .preview-actions,
+  .card-header,
+  #calendarTab,
+  #schoolScanTab,
+  #mobilityTab {
+    display: none !important;
+  }
+
+  .app-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  .main-content {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #faxExportTab {
+    display: block !important;
+  }
+
+  .fax-export-layout {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .fax-preview-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  .paper-stage {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .paper-sheet {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  #faxPreviewCanvas {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 100vh !important;
+    object-fit: contain !important;
+  }
+}
