@@ -87,6 +87,8 @@ const StorageManager = {
       const raw = localStorage.getItem(this.KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
+        if (parsed.currentYear) AppState.currentYear = Number(parsed.currentYear);
+        if (parsed.currentMonth) AppState.currentMonth = Number(parsed.currentMonth);
         if (parsed.settings) AppState.settings = { ...AppState.settings, ...parsed.settings };
         if (parsed.schoolEvents) AppState.schoolEvents = parsed.schoolEvents;
         if (parsed.dayServiceMap) AppState.dayServiceMap = parsed.dayServiceMap;
@@ -115,7 +117,8 @@ const StorageManager = {
       schoolEvents: AppState.schoolEvents,
       dayServiceMap: AppState.dayServiceMap,
       spots: AppState.spots,
-      mobilityAssignments: AppState.mobilityAssignments
+      mobilityAssignments: AppState.mobilityAssignments,
+      holidays: AppState.holidays
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -130,24 +133,44 @@ const StorageManager = {
     alert('iCloud保存用のJSONファイルをダウンロードしました。iCloud Driveまたはファイルアプリに保存してください。');
   },
 
-  importFromiCloudJson(file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const imported = JSON.parse(e.target.result);
-        if (imported.spots) AppState.spots = imported.spots;
-        if (imported.schoolEvents) AppState.schoolEvents = imported.schoolEvents;
-        if (imported.dayServiceMap) AppState.dayServiceMap = imported.dayServiceMap;
-        if (imported.mobilityAssignments) AppState.mobilityAssignments = imported.mobilityAssignments;
-        if (imported.settings) AppState.settings = { ...AppState.settings, ...imported.settings };
-
-        StorageManager.save();
-        AppUI.renderAll();
-        alert('iCloudデータを正常に読み込みました！');
-      } catch (err) {
-        alert('ファイルの読み込みに失敗しました。正しいJSONファイルかご確認ください。');
+  async importFromiCloudJson(file) {
+    if (!file) return;
+    try {
+      let text = '';
+      if (typeof file.text === 'function') {
+        text = await file.text();
+      } else {
+        text = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+          reader.readAsText(file, 'utf-8');
+        });
       }
-    };
+
+      const imported = JSON.parse(text);
+      if (imported.year) AppState.currentYear = Number(imported.year);
+      if (imported.month) AppState.currentMonth = Number(imported.month);
+      if (imported.spots && Array.isArray(imported.spots)) AppState.spots = imported.spots;
+      if (imported.schoolEvents && Array.isArray(imported.schoolEvents)) AppState.schoolEvents = imported.schoolEvents;
+      if (imported.dayServiceMap && typeof imported.dayServiceMap === 'object') AppState.dayServiceMap = imported.dayServiceMap;
+      if (imported.mobilityAssignments && Array.isArray(imported.mobilityAssignments)) {
+        AppState.mobilityAssignments = imported.mobilityAssignments.map(item => ({
+          ...item,
+          status: item.status || 'requested'
+        }));
+      }
+      if (imported.settings && typeof imported.settings === 'object') AppState.settings = { ...AppState.settings, ...imported.settings };
+      if (imported.holidays && typeof imported.holidays === 'object') AppState.holidays = { ...AppState.holidays, ...imported.holidays };
+
+      StorageManager.save();
+      AppUI.renderAll();
+      AppUI.showToast(`☁️ ${AppState.currentYear}年${AppState.currentMonth}月のiCloudデータを読み込みました！`, 'success');
+      alert(`iCloudデータを正常に読み込みました！\n（${AppState.currentYear}年${AppState.currentMonth}月の予定・設定を反映しました）`);
+    } catch (err) {
+      console.error('iCloud import error:', err);
+      alert('ファイルの読み込みに失敗しました。正しいJSONファイルかご確認ください。\nエラー詳細: ' + (err.message || err));
+    }
   }
 };
 
@@ -2339,12 +2362,19 @@ const AppUI = {
     });
 
     const fileInput = document.getElementById('importFileInput');
-    document.getElementById('importDataBtn').addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) {
-        StorageManager.importFromiCloudJson(e.target.files[0]);
-      }
-    });
+    const importBtn = document.getElementById('importDataBtn');
+    if (importBtn && fileInput) {
+      importBtn.addEventListener('click', () => {
+        fileInput.value = ''; // 必ずリセットして同一ファイルの再選択でもchangeが発火するようにする
+        fileInput.click();
+      });
+      fileInput.addEventListener('change', async (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          await StorageManager.importFromiCloudJson(e.target.files[0]);
+          fileInput.value = '';
+        }
+      });
+    }
 
     // モーダル閉じる
     document.querySelectorAll('[data-close]').forEach(btn => {
