@@ -32,10 +32,12 @@ const AppState = {
   },
   // 学校行事リスト（お便りから抽出されたデータ）
   schoolEvents: [
-    { id: 'ev-1', date: '2026-11-04', title: '身体計測', dismissalTime: '14:30', type: 'normal' },
-    { id: 'ev-2', date: '2026-11-12', title: '校外学習（給食なし・午前下校）', dismissalTime: '11:30', type: 'early' },
-    { id: 'ev-3', date: '2026-11-19', title: '授業参観・保護者懇談会', dismissalTime: '13:30', type: 'early' },
-    { id: 'ev-4', date: '2026-11-26', title: '避難訓練', dismissalTime: '14:30', type: 'normal' }
+    { id: 'ev-1', date: '2026-11-04', title: '身体計測', dismissalTime: '14:30', type: 'normal', excludeMobility: false },
+    { id: 'ev-2', date: '2026-11-12', title: '校外学習（給食なし・午前下校）', dismissalTime: '11:30', type: 'early', excludeMobility: false },
+    { id: 'ev-3', date: '2026-11-13', title: '部活動 / 学校迎え', dismissalTime: '15:30', type: 'early', excludeMobility: true },
+    { id: 'ev-4', date: '2026-11-19', title: '授業参観・保護者懇談会', dismissalTime: '13:30', type: 'early', excludeMobility: false },
+    { id: 'ev-5', date: '2026-11-20', title: '部活動 / 学校迎え', dismissalTime: '15:30', type: 'early', excludeMobility: true },
+    { id: 'ev-6', date: '2026-11-26', title: '避難訓練', dismissalTime: '14:30', type: 'normal', excludeMobility: false }
   ],
   // 放デイ利用予定マップ { 'YYYY-MM-DD': { active: boolean, reason: string, time: string } }
   dayServiceMap: {},
@@ -56,7 +58,9 @@ const AppState = {
     { id: 'mob-2', date: '2026-11-15', startTime: '13:00', endTime: '16:30', spotId: 'spot-3', spotName: '阪急西宮ガーデンズ 屋上庭園', remarks: 'カフェでおやつ', status: 'requested' }
   ],
   // FAX用紙テンプレート画像（データURL）
-  customFaxTemplateDataUrl: null
+  customFaxTemplateDataUrl: null,
+  // 移動支援の個別除外日マップ { 'YYYY-MM-DD': { reason: string } }
+  excludedMobilityDates: {}
 };
 
 // ==========================================
@@ -74,7 +78,8 @@ const StorageManager = {
         schoolEvents: AppState.schoolEvents,
         dayServiceMap: AppState.dayServiceMap,
         spots: AppState.spots,
-        mobilityAssignments: AppState.mobilityAssignments
+        mobilityAssignments: AppState.mobilityAssignments,
+        excludedMobilityDates: AppState.excludedMobilityDates || {}
       };
       localStorage.setItem(this.KEY, JSON.stringify(data));
     } catch (e) {
@@ -93,6 +98,7 @@ const StorageManager = {
         if (parsed.schoolEvents) AppState.schoolEvents = parsed.schoolEvents;
         if (parsed.dayServiceMap) AppState.dayServiceMap = parsed.dayServiceMap;
         if (parsed.spots) AppState.spots = parsed.spots;
+        if (parsed.excludedMobilityDates) AppState.excludedMobilityDates = parsed.excludedMobilityDates;
         if (parsed.mobilityAssignments) {
           // 既存データマイグレーション: statusがない場合は 'requested' を補完
           AppState.mobilityAssignments = parsed.mobilityAssignments.map(item => ({
@@ -118,7 +124,8 @@ const StorageManager = {
       dayServiceMap: AppState.dayServiceMap,
       spots: AppState.spots,
       mobilityAssignments: AppState.mobilityAssignments,
-      holidays: AppState.holidays
+      holidays: AppState.holidays,
+      excludedMobilityDates: AppState.excludedMobilityDates || {}
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -154,6 +161,7 @@ const StorageManager = {
       if (imported.spots && Array.isArray(imported.spots)) AppState.spots = imported.spots;
       if (imported.schoolEvents && Array.isArray(imported.schoolEvents)) AppState.schoolEvents = imported.schoolEvents;
       if (imported.dayServiceMap && typeof imported.dayServiceMap === 'object') AppState.dayServiceMap = imported.dayServiceMap;
+      if (imported.excludedMobilityDates && typeof imported.excludedMobilityDates === 'object') AppState.excludedMobilityDates = imported.excludedMobilityDates;
       if (imported.mobilityAssignments && Array.isArray(imported.mobilityAssignments)) {
         AppState.mobilityAssignments = imported.mobilityAssignments.map(item => ({
           ...item,
@@ -540,6 +548,60 @@ const DayServiceLogic = {
 // 4. 移動支援ホワイトスペース（空き時間）抽出
 // ==========================================
 const WhitespaceLogic = {
+  // 指定日が移動支援の除外日（部活動、学校迎え、手動除外等）か判定
+  isDateExcluded(dateStr) {
+    // 1. AppState.excludedMobilityDates に個別指定があるか
+    if (AppState.excludedMobilityDates && AppState.excludedMobilityDates[dateStr]) {
+      return {
+        excluded: true,
+        reason: AppState.excludedMobilityDates[dateStr].reason || '手動除外'
+      };
+    }
+
+    // 2. schoolEvents に一致する予定があるか
+    const ev = AppState.schoolEvents.find(e => e.date === dateStr);
+    if (ev) {
+      if (ev.excludeMobility === true) {
+        return {
+          excluded: true,
+          reason: ev.title || '部活動・学校予定'
+        };
+      }
+      // キーワード判定: 「部活」「部活動」「学校迎え」「迎え」など（excludeMobility が明示的に false でない場合）
+      if (ev.excludeMobility !== false && (
+        (ev.title && ev.title.includes('部活')) ||
+        (ev.title && ev.title.includes('部活動')) ||
+        (ev.title && ev.title.includes('学校迎え')) ||
+        (ev.title && ev.title.includes('保護者迎え'))
+      )) {
+        return {
+          excluded: true,
+          reason: ev.title
+        };
+      }
+    }
+
+    return { excluded: false, reason: '' };
+  },
+
+  // 除外日のトグル/解除
+  toggleDateExclusion(dateStr, reason = '部活動・用事') {
+    if (!AppState.excludedMobilityDates) AppState.excludedMobilityDates = {};
+    if (AppState.excludedMobilityDates[dateStr]) {
+      delete AppState.excludedMobilityDates[dateStr];
+      const ev = AppState.schoolEvents.find(e => e.date === dateStr);
+      if (ev) ev.excludeMobility = false;
+      AppUI.showToast(`${dateStr} の除外設定を解除し、候補枠に復帰しました`, 'info');
+    } else {
+      AppState.excludedMobilityDates[dateStr] = { reason };
+      const ev = AppState.schoolEvents.find(e => e.date === dateStr);
+      if (ev) ev.excludeMobility = true;
+      AppUI.showToast(`${dateStr} を移動支援の候補枠から除外しました`, 'warning');
+    }
+    StorageManager.save();
+    AppUI.renderAll();
+  },
+
   // 学校・放デイが入っていない枠を自動計算（★平日放課後の短時間枠をメインに抽出！）
   extractSlots(year, month) {
     const slots = [];
@@ -554,6 +616,10 @@ const WhitespaceLogic = {
       const dayServiceEntry = AppState.dayServiceMap[dateStr];
       const hasDayService = dayServiceEntry && dayServiceEntry.active;
       const schoolEv = AppState.schoolEvents.find(e => e.date === dateStr);
+      const excludeInfo = this.isDateExcluded(dateStr);
+
+      // 除外日（部活動・学校迎え等）は候補枠から外す
+      if (excludeInfo.excluded) continue;
 
       // 1. 平日（月〜金）で「放デイがない日」→【平日放課後 短時間枠】として最優先抽出！
       if (dayOfWeek >= 1 && dayOfWeek <= 5 && !isHoliday) {
@@ -874,13 +940,18 @@ const GeminiParser = {
 
         const events = JSON.parse(cleanJson);
         console.log(`[GeminiParser] Parsed ${events.length} school events successfully.`);
-        return events.map((ev, idx) => ({
-          id: `gemini-ev-${Date.now()}-${idx}`,
-          date: ev.date,
-          title: ev.title,
-          dismissalTime: ev.dismissalTime || '14:30',
-          type: ev.type || 'normal'
-        }));
+        return events.map((ev, idx) => {
+          const title = ev.title || '';
+          const isClubOrPickup = title.includes('部活') || title.includes('部活動') || title.includes('学校迎え') || title.includes('保護者迎え');
+          return {
+            id: `gemini-ev-${Date.now()}-${idx}`,
+            date: ev.date,
+            title: title,
+            dismissalTime: ev.dismissalTime || '14:30',
+            type: ev.type || 'normal',
+            excludeMobility: isClubOrPickup
+          };
+        });
       } catch (e) {
         lastError = e;
         console.warn(`[GeminiParser] Error trying ${ep.model}:`, e);
@@ -904,10 +975,11 @@ const GeminiParser = {
   generateMockExtractedEvents() {
     const m = String(AppState.currentMonth).padStart(2, '0');
     return [
-      { id: 'm-1', date: `${AppState.currentYear}-${m}-06`, title: '身体計測・通常授業', dismissalTime: '14:30', type: 'normal' },
-      { id: 'm-2', date: `${AppState.currentYear}-${m}-13`, title: '校外学習（給食なし・11:30下校）', dismissalTime: '11:30', type: 'early' },
-      { id: 'm-3', date: `${AppState.currentYear}-${m}-18`, title: '短縮日課（職員会議のため）', dismissalTime: '13:30', type: 'early' },
-      { id: 'm-4', date: `${AppState.currentYear}-${m}-27`, title: 'ふれあい作品展見学', dismissalTime: '14:30', type: 'normal' }
+      { id: 'm-1', date: `${AppState.currentYear}-${m}-06`, title: '身体計測・通常授業', dismissalTime: '14:30', type: 'normal', excludeMobility: false },
+      { id: 'm-2', date: `${AppState.currentYear}-${m}-13`, title: '部活動 / 学校迎え', dismissalTime: '15:30', type: 'early', excludeMobility: true },
+      { id: 'm-3', date: `${AppState.currentYear}-${m}-18`, title: '短縮日課（職員会議のため）', dismissalTime: '13:30', type: 'early', excludeMobility: false },
+      { id: 'm-4', date: `${AppState.currentYear}-${m}-20`, title: '部活動 / 学校迎え', dismissalTime: '15:30', type: 'early', excludeMobility: true },
+      { id: 'm-5', date: `${AppState.currentYear}-${m}-27`, title: 'ふれあい作品展見学', dismissalTime: '14:30', type: 'normal', excludeMobility: false }
     ];
   }
 };
@@ -1371,9 +1443,15 @@ const AppUI = {
 
       // 「早帰り・変則」フラグがあるか、または基本下校時間より早い・異なる場合
       if (hasEarlyFlag || isTimeDifferent) {
+        let alertLabel = `🎒 ${pickedTime} 下校 ⚠️変則!`;
+        if (pickedTime > defaultTime) {
+          alertLabel = `🎒 ${pickedTime} 下校 (部活動等⚠️)`;
+        } else if (pickedTime < defaultTime) {
+          alertLabel = `🎒 ${pickedTime} 下校 ⚠️早帰り!`;
+        }
         return {
           time: pickedTime,
-          label: `🎒 ${pickedTime} 下校 ⚠️早帰り!`,
+          label: alertLabel,
           isAlert: true,
           isOff: false,
           className: 'dismissal-alert'
@@ -1439,6 +1517,8 @@ const AppUI = {
         const defTime = (dayOfWeek === 3) ? '14:00' : '15:00';
         document.getElementById('editSchoolEventTime').value = defTime;
         document.querySelector('input[name="editSchoolEventType"][value="normal"]').checked = true;
+        const exCheck = document.getElementById('editSchoolEventExcludeMobility');
+        if (exCheck) exCheck.checked = false;
         document.getElementById('deleteSchoolEventModalBtn').style.display = 'none';
         this.syncTimeChips(defTime);
       }
@@ -1453,6 +1533,8 @@ const AppUI = {
       document.getElementById('editSchoolEventTitle').value = '';
       document.getElementById('editSchoolEventTime').value = '15:00';
       document.querySelector('input[name="editSchoolEventType"][value="normal"]').checked = true;
+      const exCheck = document.getElementById('editSchoolEventExcludeMobility');
+      if (exCheck) exCheck.checked = false;
       document.getElementById('deleteSchoolEventModalBtn').style.display = 'none';
       this.syncTimeChips('15:00');
     }
@@ -1470,6 +1552,18 @@ const AppUI = {
     const type = ev.type || 'normal';
     const radio = document.querySelector(`input[name="editSchoolEventType"][value="${type}"]`);
     if (radio) radio.checked = true;
+
+    // 移動支援除外チェックボックスの初期値設定
+    const exCheck = document.getElementById('editSchoolEventExcludeMobility');
+    if (exCheck) {
+      if (typeof ev.excludeMobility === 'boolean') {
+        exCheck.checked = ev.excludeMobility;
+      } else {
+        const isClub = ev.title && (ev.title.includes('部活') || ev.title.includes('部活動') || ev.title.includes('学校迎え') || ev.title.includes('保護者迎え'));
+        exCheck.checked = !!isClub;
+      }
+    }
+
     document.getElementById('deleteSchoolEventModalBtn').style.display = ev.id ? 'inline-block' : 'none';
     this.syncTimeChips(dismissalTime);
   },
@@ -1650,12 +1744,22 @@ const AppUI = {
           </div>
         `;
       } else if (!dayService && dayOfWeek >= 1 && dayOfWeek <= 5 && !isHoliday) {
-        // 放デイのない平日に、ワンタップで平日移動支援（短時間）を追加できるボタン
-        eventsHtml += `
-          <button class="cal-add-mobility-btn" data-date="${dateKey}" title="放デイのない平日に移動支援(短時間)を登録">
-            + 平日移動支援
-          </button>
-        `;
+        const excludeInfo = WhitespaceLogic.isDateExcluded(dateKey);
+        if (excludeInfo.excluded) {
+          // 移動支援 除外バッジを表示（タップして学校行事編集や除外解除が可能）
+          eventsHtml += `
+            <div class="cal-mobility-excluded-badge" data-date="${dateKey}" title="移動支援の候補から除外中: ${excludeInfo.reason || '部活動等'} - タップして設定変更">
+              <span>🚫 移動支援 除外</span>
+            </div>
+          `;
+        } else {
+          // 放デイのない平日に、ワンタップで平日移動支援（短時間）を追加できるボタン
+          eventsHtml += `
+            <button class="cal-add-mobility-btn" data-date="${dateKey}" title="放デイのない平日に移動支援(短時間)を登録">
+              + 平日移動支援
+            </button>
+          `;
+        }
       }
 
       eventsHtml += '</div>';
@@ -1714,6 +1818,20 @@ const AppUI = {
         });
       }
 
+      // 移動支援 除外バッジのタップイベント（設定変更モーダルを開く）
+      const exBadge = cell.querySelector('.cal-mobility-excluded-badge');
+      if (exBadge) {
+        exBadge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const targetEv = AppState.schoolEvents.find(x => x.date === dateKey);
+          if (targetEv) {
+            AppUI.openSchoolEventModal(targetEv);
+          } else {
+            AppUI.openSchoolEventModal(dateKey);
+          }
+        });
+      }
+
       // 移動支援バッジのタップイベント（カレンダーから直接ステータス変更・編集が可能）
       const mobBadge = cell.querySelector('.mobility-badge');
       if (mobBadge && mob) {
@@ -1752,6 +1870,7 @@ const AppUI = {
     AppState.schoolEvents.forEach(ev => {
       const tr = document.createElement('tr');
       const isEarly = ev.type === 'early';
+      const isMobilityExcluded = WhitespaceLogic.isDateExcluded(ev.date).excluded;
       tr.innerHTML = `
         <td><strong>${ev.date}</strong></td>
         <td class="clickable-cell" title="タップして行事名や下校時間を修正" style="cursor: pointer;">
@@ -1765,6 +1884,7 @@ const AppUI = {
           <span class="badge-status" style="${isEarly ? 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;font-weight:800;' : ''}">
             ${isEarly ? '⚠️ 早帰り・変則' : '通常'}
           </span>
+          ${isMobilityExcluded ? '<br><span class="badge-mobility-excluded">🚫 移動支援 除外</span>' : ''}
         </td>
         <td style="white-space: nowrap;">
           <button class="btn-primary-sm btn-edit-ev" data-id="${ev.id}" style="padding: 4px 10px; font-size: 0.8rem; margin-right: 6px;">
@@ -1809,6 +1929,57 @@ const AppUI = {
     let slots = WhitespaceLogic.extractSlots(AppState.currentYear, AppState.currentMonth);
     const container = document.getElementById('whitespaceSlotsList');
     container.innerHTML = '';
+
+    // 今月（currentYear, currentMonth）の除外日（部活動、学校迎え等）を収集
+    const year = AppState.currentYear;
+    const month = AppState.currentMonth;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const excludedDays = [];
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = this.formatDateKey(year, month, d);
+      const exInfo = WhitespaceLogic.isDateExcluded(dateStr);
+      if (exInfo.excluded) {
+        const dObj = new Date(year, month - 1, d);
+        const dayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+        const dayLabel = dayLabels[dObj.getDay()];
+        excludedDays.push({
+          date: dateStr,
+          dayLabel,
+          reason: exInfo.reason || '部活動・用事'
+        });
+      }
+    }
+
+    // 除外日一覧バナーの表示
+    if (excludedDays.length > 0) {
+      const banner = document.createElement('div');
+      banner.className = 'excluded-slots-banner';
+      banner.innerHTML = `
+        <div class="excluded-banner-title">
+          <span>🚫 移動支援の除外日 (${excludedDays.length}日)</span>
+          <span style="font-weight: normal; font-size: 0.75rem; color: #881337; margin-left: auto;">※部活動・お迎え等のため候補枠から除外中</span>
+        </div>
+        <div class="excluded-tags-list">
+          ${excludedDays.map(ex => `
+            <span class="excluded-tag" title="${ex.reason} - クリックで除外解除">
+              <span>📅 ${ex.date} (${ex.dayLabel}) : ${ex.reason}</span>
+              <span class="excluded-tag-remove" data-date="${ex.date}" title="候補枠に復帰させる">&times;</span>
+            </span>
+          `).join('')}
+        </div>
+      `;
+
+      banner.querySelectorAll('.excluded-tag-remove').forEach(rmBtn => {
+        rmBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const dStr = rmBtn.dataset.date;
+          WhitespaceLogic.toggleDateExclusion(dStr);
+        });
+      });
+
+      container.appendChild(banner);
+    }
 
     if (filterType === 'weekday-short') {
       slots = slots.filter(s => s.type === 'weekday-short');
@@ -1873,9 +2044,14 @@ const AppUI = {
         `;
       } else {
         rightHtml = `
-          <button class="btn-primary-sm assign-slot-btn" data-date="${slot.date}" data-start="${slot.defaultStart}" data-end="${slot.defaultEnd}">
-            + 行き先を割り当て
-          </button>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button class="btn-primary-sm assign-slot-btn" data-date="${slot.date}" data-start="${slot.defaultStart}" data-end="${slot.defaultEnd}">
+              + 行き先を割り当て
+            </button>
+            <button class="btn-exclude-slot" data-date="${slot.date}" title="この日を部活動や家庭の用事等で移動支援の候補から除外">
+              🚫 除外
+            </button>
+          </div>
         `;
       }
 
@@ -1903,6 +2079,14 @@ const AppUI = {
       if (assignBtn) {
         assignBtn.addEventListener('click', () => {
           AppUI.openAssignModal(slot.date, slot.defaultStart, slot.defaultEnd);
+        });
+      }
+
+      // クイック除外ボタンイベント
+      const excludeBtn = div.querySelector('.btn-exclude-slot');
+      if (excludeBtn) {
+        excludeBtn.addEventListener('click', () => {
+          WhitespaceLogic.toggleDateExclusion(slot.date, '手動除外');
         });
       }
 
@@ -2702,6 +2886,39 @@ const AppUI = {
       });
     });
 
+    // クイック部活動プリセットボタン（学校行事モーダル内）
+    const quickClubBtn = document.getElementById('quickClubEventBtn');
+    if (quickClubBtn) {
+      quickClubBtn.addEventListener('click', () => {
+        const titleInput = document.getElementById('editSchoolEventTitle');
+        const timeInput = document.getElementById('editSchoolEventTime');
+        const excludeCheck = document.getElementById('editSchoolEventExcludeMobility');
+        const earlyRadio = document.querySelector('input[name="editSchoolEventType"][value="early"]');
+
+        if (titleInput) titleInput.value = '部活動 / 学校迎え';
+        if (timeInput) timeInput.value = '15:30';
+        if (earlyRadio) earlyRadio.checked = true;
+        if (excludeCheck) excludeCheck.checked = true;
+
+        AppUI.syncTimeChips('15:30');
+      });
+    }
+
+    // 学校予定タイトル入力時の「部活」「学校迎え」検知で自動除外チェック連動
+    const schoolEventTitleInput = document.getElementById('editSchoolEventTitle');
+    if (schoolEventTitleInput) {
+      schoolEventTitleInput.addEventListener('input', (e) => {
+        const val = e.target.value;
+        const excludeCheck = document.getElementById('editSchoolEventExcludeMobility');
+        if (excludeCheck && !excludeCheck.checked) {
+          const isClubOrPickup = val.includes('部活') || val.includes('部活動') || val.includes('学校迎え') || val.includes('保護者迎え');
+          if (isClubOrPickup) {
+            excludeCheck.checked = true;
+          }
+        }
+      });
+    }
+
     // 学校行事・下校時間 保存ボタン
     const saveSchoolEvBtn = document.getElementById('saveSchoolEventModalBtn');
     if (saveSchoolEvBtn) {
@@ -2711,6 +2928,7 @@ const AppUI = {
         const title = document.getElementById('editSchoolEventTitle').value.trim() || '学校行事';
         const dismissalTime = document.getElementById('editSchoolEventTime').value.trim() || '15:00';
         const type = document.querySelector('input[name="editSchoolEventType"]:checked')?.value || 'normal';
+        const excludeMobility = document.getElementById('editSchoolEventExcludeMobility')?.checked || false;
 
         if (!date) {
           alert('日付を入力してください');
@@ -2724,8 +2942,9 @@ const AppUI = {
             target.title = title;
             target.dismissalTime = dismissalTime;
             target.type = type;
+            target.excludeMobility = excludeMobility;
           } else {
-            AppState.schoolEvents.push({ id, date, title, dismissalTime, type });
+            AppState.schoolEvents.push({ id, date, title, dismissalTime, type, excludeMobility });
           }
         } else {
           AppState.schoolEvents.push({
@@ -2733,8 +2952,17 @@ const AppUI = {
             date,
             title,
             dismissalTime,
-            type
+            type,
+            excludeMobility
           });
+        }
+
+        // 個別除外マップAppState.excludedMobilityDatesも連動更新
+        if (excludeMobility) {
+          if (!AppState.excludedMobilityDates) AppState.excludedMobilityDates = {};
+          AppState.excludedMobilityDates[date] = { reason: title };
+        } else if (AppState.excludedMobilityDates && AppState.excludedMobilityDates[date]) {
+          delete AppState.excludedMobilityDates[date];
         }
 
         StorageManager.save();
@@ -2752,6 +2980,10 @@ const AppUI = {
       deleteSchoolEvBtn.addEventListener('click', () => {
         const id = document.getElementById('editSchoolEventId').value;
         if (id && confirm('この予定を削除しますか？')) {
+          const ev = AppState.schoolEvents.find(e => e.id === id);
+          if (ev && ev.date && AppState.excludedMobilityDates && AppState.excludedMobilityDates[ev.date]) {
+            delete AppState.excludedMobilityDates[ev.date];
+          }
           AppState.schoolEvents = AppState.schoolEvents.filter(e => e.id !== id);
           StorageManager.save();
           AppUI.renderSchoolEvents();

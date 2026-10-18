@@ -647,19 +647,25 @@
           <div class="form-group">
             <label>行事名・メモ</label>
             <input type="text" id="editSchoolEventTitle" class="text-input" placeholder="例: 教育実習、校外学習、部活動">
+            <div class="quick-preset-chips" style="margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" id="quickClubEventBtn" class="time-chip" style="background:#fee2e2; border-color:#fca5a5; color:#991b1b; font-size:0.8rem; padding: 4px 10px;">
+                🏃 部活動 / 学校迎え (15:30下校・移動支援除外)
+              </button>
+            </div>
           </div>
 
           <div class="form-group">
             <label>下校予定時刻 <span class="badge-status">スクールバスお迎え時間</span></label>
             <div class="quick-time-chips">
               <button type="button" class="time-chip" data-time="15:00" data-type="normal">15:00 (通常)</button>
+              <button type="button" class="time-chip" data-time="15:30" data-type="early">15:30 (部活動等⚠️)</button>
               <button type="button" class="time-chip" data-time="14:00" data-type="normal">14:00 (水曜等)</button>
               <button type="button" class="time-chip" data-time="13:00" data-type="early">13:00 (早帰り⚠️)</button>
               <button type="button" class="time-chip" data-time="11:30" data-type="early">11:30 (給食なし⚠️)</button>
               <button type="button" class="time-chip" data-time="終日休業" data-type="normal">終日休業 (学校なし)</button>
             </div>
             <div style="margin-top: 10px;">
-              <input type="text" id="editSchoolEventTime" class="text-input" placeholder="例: 15:00, 13:00, 11:30, 終日休業" style="font-weight: 700; font-size: 1.05rem;">
+              <input type="text" id="editSchoolEventTime" class="text-input" placeholder="例: 15:00, 15:30, 13:00, 11:30, 終日休業" style="font-weight: 700; font-size: 1.05rem;">
             </div>
             <small class="helper-text">※高等部・中等部など学年別で下校時刻が異なる場合も、華佳ちゃんの実際の時間を手入力できます</small>
           </div>
@@ -676,6 +682,17 @@
                 <span class="status-radio-badge badge-cancelled">⚠️ 早帰り・変則 (赤色パルス警告)</span>
               </label>
             </div>
+          </div>
+
+          <!-- 移動支援の除外設定 -->
+          <div class="form-group" style="background: #fff1f2; border: 1.5px dashed #fda4af; padding: 12px 14px; border-radius: var(--radius-md); margin-top: 14px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 4px; font-weight: 700; color: #9f1239;">
+              <input type="checkbox" id="editSchoolEventExcludeMobility" style="width: 18px; height: 18px; accent-color: #e11d48;">
+              <span>🚫 移動支援（お出かけ計画）の候補枠から除外する</span>
+            </label>
+            <small style="color: #881337; display: block; font-size: 0.78rem; line-height: 1.4;">
+              ※ 部活動（学校へのお迎え）や家庭の用事など、移動支援を利用できない日はチェックを入れてください。カレンダーの「+ 平日移動支援」ボタンや空き枠一覧から自動的に除外されます。
+            </small>
           </div>
         </div>
         <div class="modal-footer">

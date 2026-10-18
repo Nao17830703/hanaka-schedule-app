@@ -836,6 +836,120 @@ button {
   transform: scale(0.96);
 }
 
+/* カレンダーセル内の「🚫 移動支援 除外」バッジ */
+.cal-mobility-excluded-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px dashed #fda4af;
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-top: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  opacity: 0.92;
+}
+
+.cal-mobility-excluded-badge:hover {
+  background: #ffe4e6;
+  color: #9f1239;
+  border-color: #fb7185;
+  opacity: 1;
+}
+
+.cal-mobility-excluded-badge:active {
+  transform: scale(0.96);
+}
+
+/* 学校予定一覧テーブル用 移動支援除外バッジ */
+.badge-mobility-excluded {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3px;
+}
+
+/* 移動支援タブ: 除外日バナー＆タグ */
+.excluded-slots-banner {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+}
+
+.excluded-banner-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #9f1239;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.excluded-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.excluded-tag {
+  background: white;
+  border: 1px solid #fda4af;
+  color: #be123c;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.excluded-tag-remove {
+  cursor: pointer;
+  font-weight: bold;
+  opacity: 0.7;
+  padding: 0 2px;
+}
+
+.excluded-tag-remove:hover {
+  opacity: 1;
+  color: #881337;
+}
+
+.btn-exclude-slot {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  margin-left: 6px;
+}
+
+.btn-exclude-slot:hover {
+  background: #ffe4e6;
+  border-color: #fda4af;
+  color: #9f1239;
+}
+
 /* 移動支援バッジ */
 .mobility-badge {
   background-color: #dcfce7;
