@@ -152,7 +152,7 @@ flowchart TD
 ---
 
 ## 5. リポジトリ & 配置情報
-- **ローカル作業ディレクトリ**: `/Users/nao/.gemini/antigravity/scratch/hanaka-schedule-app`
+- **ローカル作業ディレクトリ**: `/Users/nao/.gemini/antigravity/scratch/Nao_Dev_Projects/hanaka-schedule-app`
 - **GitHub リポジトリ**: `https://github.com/Nao17830703/hanaka-schedule-app`
 - **GitHub Pages 公開URL**: `https://nao17830703.github.io/hanaka-schedule-app/`
 - **メインコミット**:

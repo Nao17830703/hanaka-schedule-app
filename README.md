@@ -65,7 +65,7 @@ hanaka-schedule-app/
 ### 1. ローカルでの動作確認（Mac）
 ブラウザで直接 `index.html` を開くか、ローカルサーバーを起動します：
 ```bash
-cd /Users/nao/.gemini/antigravity/scratch/hanaka-schedule-app
+cd /Users/nao/.gemini/antigravity/scratch/Nao_Dev_Projects/hanaka-schedule-app
 # Pythonなどの簡易サーバーで開く場合
 python3 -m http.server 8000
 ```
